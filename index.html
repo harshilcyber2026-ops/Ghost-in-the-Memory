@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ghost in the Memory — FlagVault CTF</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;800;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#03080c;--surface:#070f18;--surface2:#0c1a28;--border:#164060;--border2:#164060;--accent:#00e8c8;--accent2:#ff2d6b;--accent3:#f5a623;--accent4:#7c3aed;--accent5:#3498db;--accent6:#ff003c;--text:#b8cdd9;--text-dim:#3d6070;--text-hi:#e8f4f8;--glow-c:rgba(0,232,200,0.35);--glow-r:rgba(255,45,107,0.35);--font-mono:'Share Tech Mono',monospace;--font-hud:'Orbitron',sans-serif;--font-body:'Exo 2',sans-serif;--radius:2px;--transition:0.22s cubic-bezier(0.4,0,0.2,1)}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:15px;line-height:1.65;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:9999;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px);pointer-events:none}
+body::after{content:'';position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(0,232,200,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,232,200,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+h1,h2,h3{font-family:var(--font-hud);letter-spacing:1px;color:var(--text-hi)}
+p{font-family:var(--font-body);font-weight:300}
+a{color:var(--accent);text-decoration:none;transition:color var(--transition)}
+a:hover{color:var(--text-hi)}
+code,.mono{font-family:var(--font-mono);background:rgba(0,232,200,0.06);border:1px solid var(--border);padding:2px 6px;font-size:.88em;color:var(--accent)}
+.nav{position:sticky;top:0;z-index:500;background:rgba(3,8,12,.96);border-bottom:1px solid var(--border);backdrop-filter:blur(14px);padding:0 2rem;height:58px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{font-family:var(--font-hud);font-size:1rem;font-weight:800;color:var(--text-hi);letter-spacing:3px;text-decoration:none;display:flex;align-items:center;gap:.6rem}
+.nav-brand .bracket{color:var(--accent)}.nav-brand .brand-flag{color:var(--accent2)}
+.nav-links{display:flex;align-items:center;gap:.25rem;list-style:none;flex-wrap:wrap}
+.nav-links a{color:var(--text-dim);font-family:var(--font-mono);font-size:.72rem;letter-spacing:1.5px;text-transform:uppercase;padding:.4rem .8rem;border:1px solid transparent;border-radius:var(--radius);transition:all var(--transition)}
+.nav-links a:hover,.nav-links a.active{color:var(--accent);border-color:var(--border2);background:rgba(0,232,200,.05)}
+.nav-links a.active::before{content:'> '}
+.nav-status{display:flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.68rem;color:var(--text-dim)}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.page-wrap{position:relative;z-index:1;max-width:1260px;margin:0 auto;padding:3rem 2rem 6rem}
+.page-header{margin-bottom:3rem;border-left:3px solid var(--accent);padding-left:1.5rem;position:relative}
+.page-header::before{content:attr(data-index);position:absolute;right:0;top:0;font-family:var(--font-hud);font-size:5rem;font-weight:900;color:rgba(0,232,200,.04);line-height:1;pointer-events:none}
+.page-eyebrow{font-family:var(--font-mono);font-size:.68rem;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:.5rem}
+.page-title{font-size:clamp(1.8rem,4vw,3rem);font-weight:900;color:var(--text-hi);line-height:1.1;margin-bottom:.8rem}
+.page-title .hl{color:var(--accent)}.page-title .hl2{color:var(--accent2)}
+.page-desc{font-size:.88rem;color:var(--text-dim);max-width:580px;font-family:var(--font-mono)}
+.sec-divider{display:flex;align-items:center;gap:1rem;margin:2.5rem 0 1.8rem}
+.sec-divider h3{font-size:.7rem;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;white-space:nowrap}
+.sec-divider::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--border2),transparent)}
+.sec-divider::before{content:'//';font-family:var(--font-mono);color:var(--accent);font-size:.8rem}
+.tag{display:inline-block;font-family:var(--font-mono);font-size:.62rem;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1px solid}
+.tag-green{color:var(--accent);border-color:rgba(0,232,200,.3);background:rgba(0,232,200,.07)}
+.tag-red{color:var(--accent2);border-color:rgba(255,45,107,.3);background:rgba(255,45,107,.07)}
+.tag-amber{color:var(--accent3);border-color:rgba(245,166,35,.3);background:rgba(245,166,35,.07)}
+.tag-purple{color:#a78bfa;border-color:rgba(124,58,237,.3);background:rgba(124,58,237,.07)}
+.hints-container{margin-bottom:1.5rem;display:flex;flex-direction:column;gap:.6rem}
+.hint-item{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.hint-toggle{width:100%;text-align:left;background:var(--surface2);border:none;cursor:pointer;padding:.6rem 1rem;display:flex;align-items:center;gap:.6rem;font-family:var(--font-mono);font-size:.72rem;color:var(--text-dim);transition:background var(--transition),color var(--transition)}
+.hint-toggle:hover{background:rgba(245,166,35,.08);color:var(--accent3)}
+.hint-toggle .hint-num{background:rgba(245,166,35,.12);color:var(--accent3);border:1px solid rgba(245,166,35,.3);padding:1px 6px;font-size:.6rem;letter-spacing:1px}
+.hint-cost{margin-left:auto;color:var(--accent2);font-size:.65rem}
+.hint-content{display:none;padding:.8rem 1rem;font-family:var(--font-mono);font-size:.78rem;color:var(--accent3);background:rgba(245,166,35,.04);border-top:1px solid rgba(245,166,35,.15);line-height:1.8}
+.hint-item.revealed .hint-content{display:block;animation:slideDown .2s ease}
+.hint-item.revealed .hint-toggle{color:var(--accent3)}
+.flag-format{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent2);padding:.9rem 1.2rem;font-family:var(--font-mono);font-size:.82rem;color:var(--text-dim);margin-bottom:1.5rem;display:flex;align-items:center;gap:.8rem}
+.flag-format .flag-icon{font-size:1rem}.flag-format strong{color:var(--accent2)}
+.submit-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;margin-top:3rem;position:relative;overflow:hidden}
+.submit-section::before{content:'SUBMIT FLAG';position:absolute;right:1.5rem;top:1.5rem;font-family:var(--font-hud);font-size:3.5rem;font-weight:900;color:rgba(0,232,200,.03);pointer-events:none;line-height:1}
+.submit-title{font-family:var(--font-hud);font-size:1rem;color:var(--text-hi);margin-bottom:.4rem;display:flex;align-items:center;gap:.6rem}
+.submit-title::before{content:'⚑';color:var(--accent2)}
+.submit-sub{font-family:var(--font-mono);font-size:.72rem;color:var(--text-dim);margin-bottom:1.5rem}
+.form-control{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:.7rem 1rem;font-family:var(--font-mono);font-size:.85rem;color:var(--text-hi);outline:none;transition:border-color var(--transition),box-shadow var(--transition);width:100%;appearance:none}
+.form-control::placeholder{color:var(--text-dim);font-size:.78rem}
+.form-control:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,232,200,.12),0 0 12px rgba(0,232,200,.08)}
+.flag-input-wrap{position:relative;margin-bottom:1.2rem}
+.flag-input-wrap .prefix{position:absolute;left:1rem;top:50%;transform:translateY(-50%);font-family:var(--font-mono);font-size:.78rem;color:var(--accent2);pointer-events:none;white-space:nowrap}
+.flag-input-wrap .form-control{padding-left:7.8rem;letter-spacing:1px}
+.btn{font-family:var(--font-hud);font-size:.72rem;letter-spacing:3px;text-transform:uppercase;padding:.8rem 2rem;border:none;border-radius:var(--radius);cursor:pointer;transition:all var(--transition);position:relative;overflow:hidden}
+.btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);transform:translateX(-100%);transition:transform .5s}
+.btn:hover::after{transform:translateX(100%)}
+.btn-primary{background:var(--accent);color:var(--bg);font-weight:600}
+.btn-primary:hover{background:#00fff0;box-shadow:0 0 20px var(--glow-c);transform:translateY(-1px)}
+.btn-danger{background:transparent;color:var(--accent2);border:1px solid var(--accent2)}
+.btn-danger:hover{background:rgba(255,45,107,.1);box-shadow:0 0 12px var(--glow-r)}
+.submit-result{margin-top:1rem;padding:.75rem 1rem;border-radius:var(--radius);font-family:var(--font-mono);font-size:.8rem;display:none}
+.submit-result.correct{display:block;background:rgba(0,232,200,.08);border:1px solid rgba(0,232,200,.3);color:var(--accent)}
+.submit-result.incorrect{display:block;background:rgba(255,45,107,.08);border:1px solid rgba(255,45,107,.3);color:var(--accent2)}
+.tool-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;transition:all var(--transition);position:relative;overflow:hidden}
+.tool-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--tool-color,var(--accent));transform:scaleX(0);transition:transform var(--transition)}
+.tool-card:hover{border-color:var(--border2);background:var(--surface2)}
+.tool-card:hover::before{transform:scaleX(1)}
+.tool-icon{font-size:1.4rem;margin-bottom:.6rem;display:block}
+.tool-name{font-family:var(--font-hud);font-size:.8rem;font-weight:600;color:var(--text-hi);margin-bottom:.3rem}
+.tool-tag{font-family:var(--font-mono);font-size:.62rem;letter-spacing:2px;color:var(--tool-color,var(--accent));text-transform:uppercase;margin-bottom:.5rem;display:block}
+.tool-desc{font-size:.75rem;color:var(--text-dim);font-family:var(--font-mono);line-height:1.6}
+.footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-brand{font-family:var(--font-hud);font-size:.75rem;color:var(--text-dim);letter-spacing:2px}
+.footer-brand span{color:var(--accent)}
+.footer-copy{font-family:var(--font-mono);font-size:.65rem;color:var(--text-dim)}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.shake{animation:shake .4s ease}
+@media(max-width:768px){.nav{padding:0 1rem}.nav-links{display:none}.page-wrap{padding:2rem 1rem 4rem}}
+@media(max-width:900px){.layout-2col{grid-template-columns:1fr !important}}
+/* CHALLENGE LAYOUT */
+.layout-2col{display:grid;grid-template-columns:1fr 340px;gap:2rem;align-items:start}
+.sidebar{display:flex;flex-direction:column;gap:1.25rem}
+.side-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.4rem}
+.side-card-title{font-family:var(--font-mono);font-size:.62rem;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+.meta-row{display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid rgba(22,64,96,.4);font-family:var(--font-mono);font-size:.76rem}
+.meta-row:last-child{border-bottom:none}
+.meta-key{color:var(--text-dim)}.meta-val{color:var(--text-hi)}
+.meta-val.green{color:var(--accent)}.meta-val.amber{color:var(--accent3)}.meta-val.red{color:var(--accent2)}
+.dl-btn{display:flex;align-items:center;gap:.75rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.2rem;text-decoration:none;transition:all var(--transition);cursor:pointer;color:inherit;margin-bottom:.75rem}
+.dl-btn:hover{border-color:var(--accent);background:rgba(0,232,200,.06);transform:translateX(3px);color:inherit}
+.dl-icon{font-size:1.5rem;flex-shrink:0}
+.dl-name{font-family:var(--font-mono);font-size:.82rem;color:var(--accent);display:block;margin-bottom:.15rem}
+.dl-size{font-family:var(--font-mono);font-size:.62rem;color:var(--text-dim)}
+.dl-arrow{margin-left:auto;color:var(--text-dim);font-size:.9rem;transition:transform var(--transition)}
+.dl-btn:hover .dl-arrow{transform:translateX(4px);color:var(--accent)}
+.desc-block{background:var(--surface2);border-left:3px solid var(--accent4);padding:1.2rem 1.4rem;font-family:var(--font-mono);font-size:.83rem;color:var(--text);line-height:1.85;margin-bottom:1.5rem;border-radius:0 var(--radius) var(--radius) 0}
+.desc-block p+p{margin-top:.75rem}
+.desc-block .hl{color:var(--accent)}.desc-block .hl2{color:var(--accent2)}.desc-block .hl3{color:var(--accent3)}
+.solve-bar-wrap{margin-top:.6rem}
+.solve-bar-label{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.65rem;color:var(--text-dim);margin-bottom:.35rem}
+.solve-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.solve-bar-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.flag-submit-row{display:flex;gap:.75rem;align-items:flex-end;margin-top:0}
+.flag-submit-row .flag-input-wrap{flex:1;margin-bottom:0}
+.solved-banner{display:none;align-items:center;gap:1rem;background:rgba(0,232,200,.07);border:1px solid rgba(0,232,200,.3);border-radius:var(--radius);padding:1rem 1.4rem;margin-top:1rem;font-family:var(--font-mono);font-size:.82rem;color:var(--accent)}
+.solved-banner.show{display:flex;animation:fadeUp .4s ease}
+.solved-banner .sb-icon{font-size:1.4rem;flex-shrink:0}
+.solved-banner .sb-pts{margin-left:auto;font-family:var(--font-hud);font-size:1.1rem;font-weight:800;color:var(--accent3)}
+.terminal-emu{background:#010810;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:1.5rem}
+.emu-bar{background:var(--surface2);padding:.5rem 1rem;display:flex;align-items:center;gap:.6rem;border-bottom:1px solid var(--border)}
+.emu-dot{width:10px;height:10px;border-radius:50%}
+.emu-title{font-family:var(--font-mono);font-size:.65rem;color:var(--text-dim);margin:0 auto;letter-spacing:1px}
+.emu-body{padding:1rem 1.2rem;font-family:var(--font-mono);font-size:.78rem;line-height:1.9;color:#4a7a55;overflow-x:auto;white-space:pre}
+.epass{color:var(--accent)}.efail{color:var(--accent2)}.eprompt{color:var(--accent3)}.ecmt{color:var(--text-dim)}
+/* PROCESS TABLE */
+.proc-table{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:.74rem;margin-bottom:1.5rem}
+.proc-table th{background:var(--surface2);color:var(--text-dim);font-size:.6rem;letter-spacing:2px;text-transform:uppercase;padding:.5rem .8rem;border:1px solid var(--border);text-align:left}
+.proc-table td{background:#010810;border:1px solid var(--border);padding:.5rem .8rem;transition:background var(--transition)}
+.proc-table tr:hover td{background:rgba(0,232,200,.025)}
+.pid{color:var(--accent3)}.pname{color:var(--text-hi);font-weight:bold}.ppid{color:var(--text-dim)}.poffset{color:#7dd3fc}.suspect{color:var(--accent2);font-weight:bold}
+/* MEMORY MAP */
+.memmap{display:flex;flex-direction:column;gap:2px;margin-bottom:1.5rem}
+.mm-row{display:grid;grid-template-columns:160px 80px 1fr;gap:0;font-family:var(--font-mono);font-size:.72rem}
+@media(max-width:560px){.mm-row{grid-template-columns:1fr;gap:1px}}
+.mm-head .mm-cell{background:var(--surface2);color:var(--text-dim);font-size:.58rem;letter-spacing:2px;text-transform:uppercase}
+.mm-cell{background:#010810;border:1px solid var(--border);padding:.4rem .7rem;transition:background var(--transition)}
+.mm-row:hover .mm-cell{background:rgba(0,232,200,.025)}
+.mm-addr{color:#7dd3fc}.mm-size{color:var(--accent3)}.mm-desc{color:var(--text-dim)}
+.mm-row.highlight .mm-cell{background:rgba(255,45,107,.05);border-color:rgba(255,45,107,.3)}
+.mm-row.highlight .mm-desc{color:var(--accent2);font-weight:bold}
+/* NOTE BOX */
+.note-box{background:rgba(245,166,35,.05);border:1px solid rgba(245,166,35,.3);border-radius:var(--radius);padding:1rem 1.2rem;font-family:var(--font-mono);font-size:.78rem;color:var(--accent3);margin-bottom:1.5rem;display:flex;align-items:flex-start;gap:.8rem}
+.note-box .nb-icon{font-size:1rem;flex-shrink:0;margin-top:.1rem}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-brand" href="#"><span class="bracket">[</span><span class="brand-flag">⚑</span>FLAG<span style="color:var(--accent)">VAULT</span><span class="bracket">]</span></a>
+  <ul class="nav-links">
+    <li><a href="#">Home</a></li>
+    <li><a href="#" class="active">Challenges</a></li>
+    <li><a href="#">Scoreboard</a></li>
+    <li><a href="#">Tools</a></li>
+    <li><a href="#">Rules</a></li>
+  </ul>
+  <div class="nav-status"><span class="status-dot"></span><span>CTF LIVE</span></div>
+</nav>
+
+<div class="page-wrap">
+  <div style="font-family:var(--font-mono);font-size:.65rem;color:var(--text-dim);margin-bottom:2rem;display:flex;align-items:center;gap:.5rem">
+    <a href="#" style="color:var(--text-dim)">challenges</a><span>/</span>
+    <a href="#" style="color:var(--text-dim)">memory-forensics</a><span>/</span>
+    <span style="color:var(--accent)">ghost-in-the-memory</span>
+  </div>
+
+  <div class="page-header" data-index="MEM">
+    <div class="page-eyebrow">🧠 Memory Forensics · Challenge #07</div>
+    <h1 class="page-title">Ghost in the <span class="hl2">Memory</span></h1>
+    <p class="page-desc">A Windows memory dump was captured on a compromised machine. The attacker stored the flag in a running process. Dig it out.</p>
+  </div>
+
+  <div class="layout-2col">
+    <div>
+
+      <div class="sec-divider"><h3>Description</h3></div>
+      <div class="desc-block">
+        <p>Our incident response team captured a memory dump from a compromised Windows workstation. Initial triage shows <span class="hl">notepad.exe</span> was running with unusual heap allocations — the attacker stored sensitive exfiltration data inside its process memory.</p>
+        <p>The dump contains <span class="hl2">multiple memory regions</span>: image pages for system DLLs, and a suspicious notepad.exe private heap allocation. One heap buffer contains an active exfiltration payload the attacker was preparing to send.</p>
+        <p><span class="hl3">Analyse the dump. Find the suspicious process. Extract the flag from its heap. Multiple methods work — Volatility, Python regex, strings, or raw hex seek.</span></p>
+      </div>
+
+      <div class="sec-divider"><h3>Process List (from pslist output)</h3></div>
+      <table class="proc-table">
+        <thead><tr><th>PID</th><th>Process Name</th><th>PPID</th><th>Threads</th><th>Base Addr</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="pid">0x1A4C</td><td class="pname suspect">notepad.exe</td><td class="ppid">0x1120</td><td>1</td><td class="poffset">0x7FF6A8B00000</td><td class="suspect">⚠ SUSPICIOUS</td></tr>
+          <tr><td class="pid">0x0004</td><td class="pname">System</td><td class="ppid">0x0000</td><td>4</td><td class="poffset">0x7FFC5E490000</td><td style="color:var(--accent)">NORMAL</td></tr>
+          <tr><td class="pid">0x028C</td><td class="pname">lsass.exe</td><td class="ppid">0x01F4</td><td>7</td><td class="poffset">0x7FFC5D130000</td><td style="color:var(--accent)">NORMAL</td></tr>
+        </tbody>
+      </table>
+
+      <div class="sec-divider"><h3>Memory Region Map</h3></div>
+      <div class="memmap">
+        <div class="mm-row mm-head"><div class="mm-cell">Base Address</div><div class="mm-cell">Size</div><div class="mm-cell">Region</div></div>
+        <div class="mm-row"><div class="mm-cell mm-addr">0x7FFC5E490000</div><div class="mm-cell mm-size">512 KB</div><div class="mm-cell mm-desc">ntdll.dll — image pages</div></div>
+        <div class="mm-row"><div class="mm-cell mm-addr">0x7FFC5D130000</div><div class="mm-cell mm-size">256 KB</div><div class="mm-cell mm-desc">kernel32.dll — image pages</div></div>
+        <div class="mm-row highlight"><div class="mm-cell mm-addr">0x1BCA2000000</div><div class="mm-cell mm-size">256 KB</div><div class="mm-cell mm-desc">notepad.exe HEAP — suspicious allocations ← investigate here</div></div>
+        <div class="mm-row"><div class="mm-cell mm-addr">0xC7E1000000</div><div class="mm-cell mm-size">64 KB</div><div class="mm-cell mm-desc">Thread stack (main thread)</div></div>
+      </div>
+
+      <div class="sec-divider"><h3>Analysis Methods</h3></div>
+
+      <div class="terminal-emu">
+        <div class="emu-bar"><div class="emu-dot" style="background:#ff5f56"></div><div class="emu-dot" style="background:#ffbd2e"></div><div class="emu-dot" style="background:#27c93f"></div><div class="emu-title">Method 1 — strings (fastest, no tools needed)</div></div>
+        <div class="emu-body"><span class="eprompt">$ strings memory.dmp | grep "FlagVault{"</span>
+<span class="epass">FlagVault{m3m0ry_h4s_n0_s3cr3ts}</span>
+
+<span class="eprompt">$ strings memory.dmp | grep -B2 -A4 "ATTACKER_BUFFER_START"</span>
+<span class="ecmt">[ATTACKER_BUFFER_START]</span>
+<span class="ecmt">collecting_target: COMPROMISED-PC\attacker</span>
+<span class="ecmt">timestamp: 2024-11-22T03:14:07Z</span>
+<span class="ecmt">secret_key:</span>
+<span class="epass">FlagVault{m3m0ry_h4s_n0_s3cr3ts}</span>
+<span class="ecmt">[ATTACKER_BUFFER_END]</span></div>
+      </div>
+
+      <div class="terminal-emu">
+        <div class="emu-bar"><div class="emu-dot" style="background:#ff5f56"></div><div class="emu-dot" style="background:#ffbd2e"></div><div class="emu-dot" style="background:#27c93f"></div><div class="emu-title">Method 2 — Python (cross-platform, no dependencies)</div></div>
+        <div class="emu-body"><span class="ecmt">#!/usr/bin/env python3  —  save as extract.py</span>
+<span class="ecmt">import re</span>
+<span class="ecmt">with open("memory.dmp", "rb") as f:</span>
+<span class="ecmt">    data = f.read()</span>
+<span class="ecmt">match = re.search(rb'FlagVault\{[^}]+\}', data)</span>
+<span class="ecmt">if match:</span>
+<span class="ecmt">    print(match.group(0).decode())</span>
+
+<span class="eprompt">$ python3 extract.py</span>
+<span class="epass">FlagVault{m3m0ry_h4s_n0_s3cr3ts}</span></div>
+      </div>
+
+      <div class="terminal-emu">
+        <div class="emu-bar"><div class="emu-dot" style="background:#ff5f56"></div><div class="emu-dot" style="background:#ffbd2e"></div><div class="emu-dot" style="background:#27c93f"></div><div class="emu-title">Method 3 — Volatility 3</div></div>
+        <div class="emu-body"><span class="eprompt">$ vol -f memory.dmp windows.pslist</span>
+<span class="ecmt">PID   PPID  ImageFileName  Offset</span>
+<span class="epass">6732  4384  notepad.exe    0x1BCA2000000   ← suspicious</span>
+
+<span class="eprompt">$ vol -f memory.dmp windows.memmap --pid 6732 --dump</span>
+<span class="ecmt">Writing to pid.6732.dmp ...</span>
+
+<span class="eprompt">$ strings pid.6732.dmp | grep "FlagVault{"</span>
+<span class="epass">FlagVault{m3m0ry_h4s_n0_s3cr3ts}</span></div>
+      </div>
+
+      <div class="terminal-emu">
+        <div class="emu-bar"><div class="emu-dot" style="background:#ff5f56"></div><div class="emu-dot" style="background:#ffbd2e"></div><div class="emu-dot" style="background:#27c93f"></div><div class="emu-title">Method 4 — Direct byte offset (advanced)</div></div>
+        <div class="emu-body"><span class="eprompt">$ python3 -c "d=open('memory.dmp','rb').read(); i=d.find(b'FlagVault{'); print(hex(i), d[i:i+32].decode())"</span>
+<span class="epass">0xc0a05  FlagVault{m3m0ry_h4s_n0_s3cr3ts}</span>
+
+<span class="ecmt"># Or with dd (Linux):</span>
+<span class="eprompt">$ dd if=memory.dmp bs=1 skip=788997 count=32 2>/dev/null</span>
+<span class="epass">FlagVault{m3m0ry_h4s_n0_s3cr3ts}</span></div>
+      </div>
+
+      <div class="note-box">
+        <span class="nb-icon">📌</span>
+        <div>
+          <strong style="color:var(--accent3)">About the file size:</strong> This is a crafted mini memory dump (~1.1 MB) built for this CTF. Real Windows dumps are typically 2–16 GB. All analysis techniques shown work identically on both. The dump has a valid <code style="background:transparent;border:none">MDMP</code> header and genuine memory region structures — Volatility can parse the header, and strings/Python will find the flag in the heap region at offset <strong style="color:var(--accent)">0xC0A05</strong>.
+        </div>
+      </div>
+
+      <div class="sec-divider"><h3>Download</h3></div>
+      <a class="dl-btn" href="files/memory.dmp" download="memory.dmp">
+        <span class="dl-icon">💾</span>
+        <span><span class="dl-name">memory.dmp</span><span class="dl-size">Windows MDMP · ~1.1 MB · Valid MDMP header · notepad.exe heap region included</span></span>
+        <span class="dl-arrow">→</span>
+      </a>
+
+      <div class="sec-divider"><h3>Hints</h3></div>
+      <div class="hints-container">
+        <div class="hint-item" id="h1">
+          <button class="hint-toggle" onclick="revealHint('h1')">
+            <span class="hint-num">HINT 01</span>
+            No Volatility? What's the quickest solve?
+            <span class="hint-cost">-50 pts</span>
+          </button>
+          <div class="hint-content">
+            <code style="background:transparent;border:none;color:var(--accent)">strings memory.dmp | grep "FlagVault{"</code><br><br>
+            Or pure Python one-liner:<br>
+            <code style="background:transparent;border:none;color:var(--accent)">python3 -c "import re; d=open('memory.dmp','rb').read(); print(re.search(rb'FlagVault\{[^}]+\}',d).group().decode())"</code>
+          </div>
+        </div>
+        <div class="hint-item" id="h2">
+          <button class="hint-toggle" onclick="revealHint('h2')">
+            <span class="hint-num">HINT 02</span>
+            How do I install Volatility 3 (free)?
+            <span class="hint-cost">-50 pts</span>
+          </button>
+          <div class="hint-content">
+            <code style="background:transparent;border:none;color:var(--accent)">git clone https://github.com/volatilityfoundation/volatility3</code><br>
+            <code style="background:transparent;border:none;color:var(--accent)">cd volatility3</code><br>
+            <code style="background:transparent;border:none;color:var(--accent)">pip install -r requirements.txt</code><br>
+            <code style="background:transparent;border:none;color:var(--accent)">python3 vol.py -f memory.dmp windows.pslist</code><br><br>
+            Alternatively use <strong style="color:var(--accent)">MemProcFS</strong> — mounts the dump as a virtual filesystem.
+          </div>
+        </div>
+        <div class="hint-item" id="h3">
+          <button class="hint-toggle" onclick="revealHint('h3')">
+            <span class="hint-num">HINT 03</span>
+            Which process and what to search for?
+            <span class="hint-cost">-100 pts</span>
+          </button>
+          <div class="hint-content">
+            The suspicious process is <strong style="color:var(--accent2)">notepad.exe</strong>.<br>
+            Search for the string <code style="background:transparent;border:none;color:var(--accent)">[ATTACKER_BUFFER_START]</code> in the dump.<br>
+            A few lines below it, after <code style="background:transparent;border:none;color:var(--accent3)">secret_key:</code>, is the flag.
+          </div>
+        </div>
+        <div class="hint-item" id="h4">
+          <button class="hint-toggle" onclick="revealHint('h4')">
+            <span class="hint-num">HINT 04</span>
+            Exact file offset of the flag
+            <span class="hint-cost">-150 pts</span>
+          </button>
+          <div class="hint-content">
+            Flag starts at offset <strong style="color:var(--accent)">0xC0A05</strong> (decimal 788997):<br><br>
+            <code style="background:transparent;border:none;color:var(--accent)">python3 -c "d=open('memory.dmp','rb').read(); print(d[0xC0A05:0xC0A25].decode())"</code><br><br>
+            Or with dd:<br>
+            <code style="background:transparent;border:none;color:var(--accent)">dd if=memory.dmp bs=1 skip=788997 count=32 2>/dev/null</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="flag-format">
+        <span class="flag-icon">⚑</span>
+        <span>Flag format: <strong>FlagVault{your_flag_here}</strong></span>
+      </div>
+
+      <div class="submit-section">
+        <div class="submit-title">Submit Your Flag</div>
+        <p class="submit-sub">Extract the flag from the notepad.exe heap region in memory.dmp.</p>
+        <div class="flag-input-wrap">
+          <span class="prefix">FlagVault{</span>
+          <input class="form-control" id="flagInput" type="text" placeholder="your_flag_here}" autocomplete="off" spellcheck="false"/>
+        </div>
+        <div class="flag-submit-row">
+          <button class="btn btn-primary" onclick="submitFlag()">⚑ &nbsp;Submit Flag</button>
+          <button class="btn btn-danger"  onclick="clearFlag()">✕ &nbsp;Clear</button>
+        </div>
+        <div class="solved-banner" id="solvedBanner">
+          <span class="sb-icon">🏆</span>
+          <div>
+            <div style="font-weight:bold;margin-bottom:.2rem;color:var(--accent)">CORRECT — Memory Extracted!</div>
+            <div style="font-size:.72rem;color:var(--text-dim)">You found the flag in the notepad.exe heap. Solid memory forensics.</div>
+          </div>
+          <span class="sb-pts">+400 pts</span>
+        </div>
+        <div class="submit-result" id="wrongBanner">
+          ✕ &nbsp;Incorrect. Use strings/Python on memory.dmp and search for the flag pattern.
+        </div>
+      </div>
+
+    </div><!-- /main -->
+
+    <aside class="sidebar">
+      <div class="side-card">
+        <div class="side-card-title">// Challenge Info</div>
+        <div class="meta-row"><span class="meta-key">Category</span><span class="meta-val"><span class="tag tag-purple">Mem Forensics</span></span></div>
+        <div class="meta-row"><span class="meta-key">Difficulty</span><span class="meta-val"><span class="tag tag-amber">Medium</span></span></div>
+        <div class="meta-row"><span class="meta-key">Points</span><span class="meta-val" style="color:var(--accent3)">400 pts</span></div>
+        <div class="meta-row"><span class="meta-key">OS</span><span class="meta-val">Windows 10 x64</span></div>
+        <div class="meta-row"><span class="meta-key">Format</span><span class="meta-val"><code style="font-size:.7rem">MDMP</code></span></div>
+        <div class="meta-row"><span class="meta-key">Suspect</span><span class="meta-val red">notepad.exe</span></div>
+        <div class="meta-row"><span class="meta-key">Author</span><span class="meta-val green">FlagVault Team</span></div>
+        <div class="meta-row"><span class="meta-key">Solves</span><span class="meta-val green" id="solveCount">34</span></div>
+        <div class="solve-bar-wrap">
+          <div class="solve-bar-label"><span>Solve Rate</span><span id="solveRate">34 / 120</span></div>
+          <div class="solve-bar"><div class="solve-bar-fill" id="solveFill"></div></div>
+        </div>
+      </div>
+
+      <div class="side-card" style="border-left:3px solid var(--accent)">
+        <div class="side-card-title">// Dump File Info</div>
+        <div class="meta-row"><span class="meta-key">Signature</span><span class="meta-val green">MDMP ✓</span></div>
+        <div class="meta-row"><span class="meta-key">Architecture</span><span class="meta-val">AMD64</span></div>
+        <div class="meta-row"><span class="meta-key">Build</span><span class="meta-val">Win10 19041</span></div>
+        <div class="meta-row"><span class="meta-key">Streams</span><span class="meta-val">4 (SysInfo, Threads, Modules, Mem64)</span></div>
+        <div class="meta-row"><span class="meta-key">Captured</span><span class="meta-val">2024-11-22 03:14</span></div>
+        <div class="meta-row"><span class="meta-key">File Size</span><span class="meta-val">~1.1 MB</span></div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-card-title">// Tools</div>
+        <div style="display:flex;flex-direction:column;gap:.6rem">
+          <div class="tool-card" style="--tool-color:var(--accent2)">
+            <span class="tool-icon">🔬</span>
+            <div class="tool-name">Volatility 3</div>
+            <span class="tool-tag">memory forensics</span>
+            <p class="tool-desc">Gold standard. Free on GitHub. <code style="background:transparent;border:none;font-size:.7rem">windows.pslist</code> + memmap.</p>
+          </div>
+          <div class="tool-card" style="--tool-color:var(--accent3)">
+            <span class="tool-icon">🐍</span>
+            <div class="tool-name">Python regex</div>
+            <span class="tool-tag">scripting</span>
+            <p class="tool-desc">Scan the binary for <code style="background:transparent;border:none;font-size:.7rem">FlagVault{...}</code> — fastest cross-platform method.</p>
+          </div>
+          <div class="tool-card" style="--tool-color:var(--accent)">
+            <span class="tool-icon">📋</span>
+            <div class="tool-name">strings + grep</div>
+            <span class="tool-tag">cli</span>
+            <p class="tool-desc"><code style="background:transparent;border:none;font-size:.7rem">strings memory.dmp | grep FlagVault</code></p>
+          </div>
+          <div class="tool-card" style="--tool-color:var(--accent4)">
+            <span class="tool-icon">🗂️</span>
+            <div class="tool-name">MemProcFS</div>
+            <span class="tool-tag">filesystem view</span>
+            <p class="tool-desc">Mounts dump as a virtual filesystem. Browse process memory as files.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-card-title">// Recent Solvers</div>
+        <div id="solverList"></div>
+      </div>
+
+      <div class="side-card" style="border-left:3px solid var(--accent2)">
+        <div class="side-card-title">// Flag Format</div>
+        <code style="display:block;font-size:.78rem;word-break:break-all">FlagVault{your_flag_here}</code>
+        <p style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-dim);margin-top:.6rem">Found in notepad.exe heap at offset 0xC0A05.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-brand">FLAG<span>VAULT</span> CTF</div>
+  <div class="footer-copy">Ghost in the Memory &nbsp;·&nbsp; Memory Forensics &nbsp;·&nbsp; 400 pts</div>
+</footer>
+
+<script>
+/* FlagVault CTF — Ghost in the Memory
+   Flag: FlagVault{m3m0ry_h4s_n0_s3cr3ts}
+   Array XOR 0x52 — verified */
+const _fe=[20,62,51,53,4,51,39,62,38,41,63,97,63,98,32,43,13,58,102,33,13,60,98,13,33,97,49,32,97,38,33,47];
+function _flag(){return _fe.map(b=>String.fromCharCode(b^0x52)).join('');}
+function revealHint(id){const el=document.getElementById(id);if(el)el.classList.toggle('revealed');}
+function submitFlag(){
+  const inp=document.getElementById('flagInput'),ok=document.getElementById('solvedBanner'),bad=document.getElementById('wrongBanner');
+  if(!inp)return;
+  let raw=inp.value.trim();
+  let sub=raw.startsWith('FlagVault{')?raw:raw.startsWith('{')?'FlagVault'+raw:'FlagVault{'+raw;
+  ok.classList.remove('show');bad.style.display='none';bad.className='submit-result';
+  if(sub===_flag()){
+    ok.classList.add('show');inp.style.borderColor='var(--accent)';inp.style.boxShadow='0 0 0 2px rgba(0,232,200,.2)';
+    document.body.style.transition='background .15s';document.body.style.background='#001a10';
+    setTimeout(()=>{document.body.style.background='';},300);_inc();
+  }else{
+    bad.style.display='block';bad.classList.add('incorrect');inp.style.borderColor='var(--accent2)';inp.style.boxShadow='0 0 0 2px rgba(255,45,107,.2)';
+    inp.classList.add('shake');setTimeout(()=>inp.classList.remove('shake'),500);
+  }
+}
+function clearFlag(){
+  const inp=document.getElementById('flagInput'),ok=document.getElementById('solvedBanner'),bad=document.getElementById('wrongBanner');
+  if(inp){inp.value='';inp.style.borderColor='';inp.style.boxShadow='';}
+  if(ok)ok.classList.remove('show');
+  if(bad){bad.style.display='none';bad.className='submit-result';}
+}
+function _inc(){
+  const el=document.getElementById('solveCount'),r=document.getElementById('solveRate'),f=document.getElementById('solveFill');
+  if(!el)return;const n=parseInt(el.textContent,10)+1;
+  el.textContent=n;if(r)r.textContent=n+' / 120';if(f)f.style.width=((n/120)*100).toFixed(1)+'%';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const inp=document.getElementById('flagInput');
+  if(inp){inp.addEventListener('keydown',e=>{if(e.key==='Enter')submitFlag();});inp.addEventListener('input',()=>{inp.style.borderColor='';inp.style.boxShadow='';});}
+  setTimeout(()=>{const f=document.getElementById('solveFill');if(f)f.style.width='28%';},500);
+  const sl=document.getElementById('solverList');
+  if(sl)sl.innerHTML=[{n:'vol3_expert',t:'2h ago'},{n:'heap_hunter',t:'4h ago'},{n:'strings_ftw',t:'6h ago'},{n:'ram_reader',t:'9h ago'},{n:'memdump_69',t:'12h ago'}].map(s=>`<div style="display:flex;align-items:center;justify-content:space-between;font-family:var(--font-mono);font-size:.72rem;padding:.4rem 0;border-bottom:1px solid rgba(22,64,96,.4)"><span style="color:var(--text-hi)">🔓 ${s.n}</span><span style="color:var(--text-dim)">${s.t}</span></div>`).join('');
+});
+</script>
+</body>
+</html>
