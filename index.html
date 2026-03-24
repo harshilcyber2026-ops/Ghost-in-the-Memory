@@ -155,13 +155,6 @@ code,.mono{font-family:var(--font-mono);background:rgba(0,232,200,0.06);border:1
 
 <nav class="nav">
   <a class="nav-brand" href="#"><span class="bracket">[</span><span class="brand-flag">⚑</span>FLAG<span style="color:var(--accent)">VAULT</span><span class="bracket">]</span></a>
-  <ul class="nav-links">
-    <li><a href="#">Home</a></li>
-    <li><a href="#" class="active">Challenges</a></li>
-    <li><a href="#">Scoreboard</a></li>
-    <li><a href="#">Tools</a></li>
-    <li><a href="#">Rules</a></li>
-  </ul>
   <div class="nav-status"><span class="status-dot"></span><span>CTF LIVE</span></div>
 </nav>
 
@@ -274,92 +267,6 @@ code,.mono{font-family:var(--font-mono);background:rgba(0,232,200,0.06);border:1
         <span class="dl-arrow">→</span>
       </a>
 
-      <div class="sec-divider"><h3>Hints</h3></div>
-      <div class="hints-container">
-        <div class="hint-item" id="h1">
-          <button class="hint-toggle" onclick="revealHint('h1')">
-            <span class="hint-num">HINT 01</span>
-            No Volatility? What's the quickest solve?
-            <span class="hint-cost">-50 pts</span>
-          </button>
-          <div class="hint-content">
-            <code style="background:transparent;border:none;color:var(--accent)">strings memory.dmp | grep "FlagVault{"</code><br><br>
-            Or pure Python one-liner:<br>
-            <code style="background:transparent;border:none;color:var(--accent)">python3 -c "import re; d=open('memory.dmp','rb').read(); print(re.search(rb'FlagVault\{[^}]+\}',d).group().decode())"</code>
-          </div>
-        </div>
-        <div class="hint-item" id="h2">
-          <button class="hint-toggle" onclick="revealHint('h2')">
-            <span class="hint-num">HINT 02</span>
-            How do I install Volatility 3 (free)?
-            <span class="hint-cost">-50 pts</span>
-          </button>
-          <div class="hint-content">
-            <code style="background:transparent;border:none;color:var(--accent)">git clone https://github.com/volatilityfoundation/volatility3</code><br>
-            <code style="background:transparent;border:none;color:var(--accent)">cd volatility3</code><br>
-            <code style="background:transparent;border:none;color:var(--accent)">pip install -r requirements.txt</code><br>
-            <code style="background:transparent;border:none;color:var(--accent)">python3 vol.py -f memory.dmp windows.pslist</code><br><br>
-            Alternatively use <strong style="color:var(--accent)">MemProcFS</strong> — mounts the dump as a virtual filesystem.
-          </div>
-        </div>
-        <div class="hint-item" id="h3">
-          <button class="hint-toggle" onclick="revealHint('h3')">
-            <span class="hint-num">HINT 03</span>
-            Which process and what to search for?
-            <span class="hint-cost">-100 pts</span>
-          </button>
-          <div class="hint-content">
-            The suspicious process is <strong style="color:var(--accent2)">notepad.exe</strong>.<br>
-            Search for the string <code style="background:transparent;border:none;color:var(--accent)">[ATTACKER_BUFFER_START]</code> in the dump.<br>
-            A few lines below it, after <code style="background:transparent;border:none;color:var(--accent3)">secret_key:</code>, is the flag.
-          </div>
-        </div>
-        <div class="hint-item" id="h4">
-          <button class="hint-toggle" onclick="revealHint('h4')">
-            <span class="hint-num">HINT 04</span>
-            Exact file offset of the flag
-            <span class="hint-cost">-150 pts</span>
-          </button>
-          <div class="hint-content">
-            Flag starts at offset <strong style="color:var(--accent)">0xC0A05</strong> (decimal 788997):<br><br>
-            <code style="background:transparent;border:none;color:var(--accent)">python3 -c "d=open('memory.dmp','rb').read(); print(d[0xC0A05:0xC0A25].decode())"</code><br><br>
-            Or with dd:<br>
-            <code style="background:transparent;border:none;color:var(--accent)">dd if=memory.dmp bs=1 skip=788997 count=32 2>/dev/null</code>
-          </div>
-        </div>
-      </div>
-
-      <div class="flag-format">
-        <span class="flag-icon">⚑</span>
-        <span>Flag format: <strong>FlagVault{your_flag_here}</strong></span>
-      </div>
-
-      <div class="submit-section">
-        <div class="submit-title">Submit Your Flag</div>
-        <p class="submit-sub">Extract the flag from the notepad.exe heap region in memory.dmp.</p>
-        <div class="flag-input-wrap">
-          <span class="prefix">FlagVault{</span>
-          <input class="form-control" id="flagInput" type="text" placeholder="your_flag_here}" autocomplete="off" spellcheck="false"/>
-        </div>
-        <div class="flag-submit-row">
-          <button class="btn btn-primary" onclick="submitFlag()">⚑ &nbsp;Submit Flag</button>
-          <button class="btn btn-danger"  onclick="clearFlag()">✕ &nbsp;Clear</button>
-        </div>
-        <div class="solved-banner" id="solvedBanner">
-          <span class="sb-icon">🏆</span>
-          <div>
-            <div style="font-weight:bold;margin-bottom:.2rem;color:var(--accent)">CORRECT — Memory Extracted!</div>
-            <div style="font-size:.72rem;color:var(--text-dim)">You found the flag in the notepad.exe heap. Solid memory forensics.</div>
-          </div>
-          <span class="sb-pts">+400 pts</span>
-        </div>
-        <div class="submit-result" id="wrongBanner">
-          ✕ &nbsp;Incorrect. Use strings/Python on memory.dmp and search for the flag pattern.
-        </div>
-      </div>
-
-    </div><!-- /main -->
-
     <aside class="sidebar">
       <div class="side-card">
         <div class="side-card-title">// Challenge Info</div>
@@ -430,6 +337,10 @@ code,.mono{font-family:var(--font-mono);background:rgba(0,232,200,0.06);border:1
     </aside>
   </div>
 </div>
+
+    </div><!-- /main -->
+
+    
 
 <footer class="footer">
   <div class="footer-brand">FLAG<span>VAULT</span> CTF</div>
